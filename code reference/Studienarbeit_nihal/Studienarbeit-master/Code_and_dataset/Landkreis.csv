@@ -1,0 +1,365 @@
+Landkreis,Ref_no
+Flensburg,1001
+Kiel,1002
+Lübeck,1003
+Neumünster,1004
+Dithmarschen,1051
+Herzogtum Lauenburg,1053
+Nordfriesland,1054
+Ostholstein,1055
+Pinneberg,1056
+Plön,1057
+Rendsburg-Eckernförde,1058
+Schleswig-Flensburg,1059
+Segeberg,1060
+Steinburg,1061
+Stormarn,1062
+Hamburg,2000
+Braunschweig,3101
+Salzgitter,3102
+Wolfsburg,3103
+Gifhorn,3151
+Goslar,3153
+Helmstedt,3154
+Northeim,3155
+Peine,3157
+Wolfenbüttel,3158
+Diepholz,3251
+Hameln-Pyrmont,3252
+Hildesheim,3254
+Holzminden,3255
+Schaumburg,3257
+Celle,3351
+Cuxhaven,3352
+Harburg,3353
+Lüchow-Dannenberg,3354
+Lüneburg,3355
+Osterholz,3356
+Rotenburg (Wümme),3357
+Heidekreis,3358
+Stade,3359
+Uelzen,3360
+Verden,3361
+Delmenhorst,3401
+Emden,3402
+Osnabrück,3404
+Wilhelmshaven,3405
+Ammerland,3451
+Aurich,3452
+Cloppenburg,3453
+Emsland,3454
+Friesland,3455
+Grafschaft Bentheim,3456
+Leer,3457
+Oldenburg,3458
+Vechta,3460
+Wesermarsch,3461
+Wittmund,3462
+Bremen,4011
+Bremerhaven,4012
+Düsseldorf,5111
+Duisburg,5112
+Essen,5113
+Krefeld,5114
+Mönchengladbach,5116
+Mülheim an der Ruhr,5117
+Oberhausen,5119
+Remscheid,5120
+Solingen,5122
+Wuppertal,5124
+Kleve,5154
+Mettmann,5158
+Rhein-Kreis Neuss,5162
+Viersen,5166
+Wesel,5170
+Bonn,5314
+Köln,5315
+Leverkusen,5316
+Düren,5358
+Rhein-Erft-Kreis,5362
+Euskirchen,5366
+Heinsberg,5370
+Oberbergischer Kreis,5374
+Rheinisch-Bergischer Kreis,5378
+Rhein-Sieg-Kreis,5382
+Bottrop,5512
+Gelsenkirchen,5513
+Münster,5515
+Borken,5554
+Coesfeld,5558
+Recklinghausen,5562
+Steinfurt,5566
+Warendorf,5570
+Bielefeld,5711
+Gütersloh,5754
+Herford,5758
+Höxter,5762
+Lippe,5766
+Minden-Lübbecke,5770
+Paderborn,5774
+Bochum,5911
+Dortmund,5913
+Hagen,5914
+Hamm,5915
+Herne,5916
+Ennepe-Ruhr-Kreis,5954
+Hochsauerlandkreis,5958
+Märkischer Kreis,5962
+Olpe,5966
+Siegen-Wittgenstein,5970
+Soest,5974
+Unna,5978
+Darmstadt,6411
+Frankfurt am Main,6412
+Offenbach am Main,6413
+Wiesbaden,6414
+Bergstraße,6431
+Darmstadt-Dieburg,6432
+Groß-Gerau,6433
+Hochtaunuskreis,6434
+Main-Kinzig-Kreis,6435
+Main-Taunus-Kreis,6436
+Odenwaldkreis,6437
+Offenbach,6438
+Rheingau-Taunus-Kreis,6439
+Wetteraukreis,6440
+Gießen,6531
+Lahn-Dill-Kreis,6532
+Limburg-Weilburg,6533
+Marburg-Biedenkopf,6534
+Vogelsbergkreis,6535
+Kassel,6611
+Fulda,6631
+Hersfeld-Rotenburg,6632
+Schwalm-Eder-Kreis,6634
+Waldeck-Frankenberg,6635
+Werra-Meißner-Kreis,6636
+Koblenz,7111
+Ahrweiler,7131
+Altenkirchen (Westerwald),7132
+Bad Kreuznach,7133
+Birkenfeld,7134
+Cochem-Zell,7135
+Mayen-Koblenz,7137
+Neuwied,7138
+Rhein-Hunsrück-Kreis,7140
+Rhein-Lahn-Kreis,7141
+Westerwaldkreis,7143
+Trier,7211
+Bernkastel-Wittlich,7231
+Eifelkreis Bitburg-Prüm,7232
+Vulkaneifel,7233
+Trier-Saarburg,7235
+Frankenthal (Pfalz),7311
+Kaiserslautern,7312
+Landau in der Pfalz,7313
+Ludwigshafen am Rhein,7314
+Mainz,7315
+Neustadt an der Weinstraße,7316
+Pirmasens,7317
+Speyer,7318
+Worms,7319
+Zweibrücken,7320
+Alzey-Worms,7331
+Bad Dürkheim,7332
+Donnersbergkreis,7333
+Germersheim,7334
+Kusel,7336
+Südliche Weinstraße,7337
+Rhein-Pfalz-Kreis,7338
+Mainz-Bingen,7339
+Südwestpfalz,7340
+Stuttgart,8111
+Böblingen,8115
+Esslingen,8116
+Göppingen,8117
+Ludwigsburg,8118
+Rems-Murr-Kreis,8119
+Heilbronn,8121
+Hohenlohekreis,8126
+Schwäbisch Hall,8127
+Main-Tauber-Kreis,8128
+Heidenheim,8135
+Ostalbkreis,8136
+Baden-Baden,8211
+Karlsruhe,8212
+Rastatt,8216
+Heidelberg,8221
+Mannheim,8222
+Neckar-Odenwald-Kreis,8225
+Rhein-Neckar-Kreis,8226
+Pforzheim,8231
+Calw,8235
+Enzkreis,8236
+Freudenstadt,8237
+Freiburg im Breisgau,8311
+Breisgau-Hochschwarzwald,8315
+Emmendingen,8316
+Ortenaukreis,8317
+Rottweil,8325
+Schwarzwald-Baar-Kreis,8326
+Tuttlingen,8327
+Konstanz,8335
+Lörrach,8336
+Waldshut,8337
+Reutlingen,8415
+Tübingen,8416
+Zollernalbkreis,8417
+Ulm,8421
+Alb-Donau-Kreis,8425
+Biberach,8426
+Bodenseekreis,8435
+Ravensburg,8436
+Sigmaringen,8437
+Ingolstadt,9161
+München,9162
+Rosenheim,9163
+Altötting,9171
+Berchtesgadener Land,9172
+Bad Tölz-Wolfratshausen,9173
+Dachau,9174
+Ebersberg,9175
+Eichstätt,9176
+Erding,9177
+Freising,9178
+Fürstenfeldbruck,9179
+Garmisch-Partenkirchen,9180
+Landsberg am Lech,9181
+Miesbach,9182
+Neuburg-Schrobenhausen,9185
+Starnberg,9188
+Traunstein,9189
+Weilheim-Schongau,9190
+Landshut,9261
+Passau,9262
+Straubing,9263
+Deggendorf,9271
+Freyung-Grafenau,9272
+Kelheim,9273
+Regen,9276
+Rottal-Inn,9277
+Straubing-Bogen,9278
+Dingolfing-Landau,9279
+Amberg,9361
+Regensburg,9362
+Amberg-Sulzbach,9371
+Cham,9372
+Schwandorf,9376
+Tirschenreuth,9377
+Bamberg,9461
+Bayreuth,9462
+Coburg,9463
+Hof,9464
+Forchheim,9474
+Kronach,9476
+Kulmbach,9477
+Lichtenfels,9478
+Ansbach,9561
+Erlangen,9562
+Fürth,9563
+Nürnberg,9564
+Schwabach,9565
+Erlangen-Höchstadt,9572
+Nürnberger Land,9574
+Roth,9576
+Weißenburg-Gunzenhausen,9577
+Aschaffenburg,9661
+Schweinfurt,9662
+Würzburg,9663
+Bad Kissingen,9672
+Rhön-Grabfeld,9673
+Haßberge,9674
+Kitzingen,9675
+Miltenberg,9676
+Main-Spessart,9677
+Augsburg,9761
+Kaufbeuren,9762
+Kempten (Allgäu),9763
+Memmingen,9764
+Aichach-Friedberg,9771
+Günzburg,9774
+Neu-Ulm,9775
+Lindau (Bodensee),9776
+Ostallgäu,9777
+Unterallgäu,9778
+Donau-Ries,9779
+Oberallgäu,9780
+Merzig-Wadern,10042
+Neunkirchen,10043
+Saarlouis,10044
+Saarpfalz-Kreis,10045
+Berlin,11000
+Brandenburg an der Havel,12051
+Cottbus,12052
+Frankfurt (Oder),12053
+Potsdam,12054
+Barnim,12060
+Dahme-Spreewald,12061
+Elbe-Elster,12062
+Havelland,12063
+Märkisch-Oderland,12064
+Oberhavel,12065
+Oberspreewald-Lausitz,12066
+Oder-Spree,12067
+Ostprignitz-Ruppin,12068
+Potsdam-Mittelmark,12069
+Prignitz,12070
+Spree-Neiße,12071
+Teltow-Fläming,12072
+Uckermark,12073
+Rostock,13003
+Schwerin,13004
+Mecklenburgische Seenplatte,13071
+Vorpommern-Rügen,13073
+Nordwestmecklenburg,13074
+Vorpommern-Greifswald,13075
+Ludwigslust-Parchim,13076
+Chemnitz,14511
+Erzgebirgskreis,14521
+Mittelsachsen,14522
+Vogtlandkreis,14523
+Zwickau,14524
+Dresden,14612
+Bautzen,14625
+Görlitz,14626
+Meißen,14627
+Sächsische Schweiz-Osterzgebirge,14628
+Leipzig,14713
+Nordsachsen,14730
+Dessau-Roßlau,15001
+Halle (Saale),15002
+Magdeburg,15003
+Altmarkkreis Salzwedel,15081
+Anhalt-Bitterfeld,15082
+Börde,15083
+Burgenlandkreis,15084
+Harz,15085
+Jerichower Land,15086
+Mansfeld-Südharz,15087
+Saalekreis,15088
+Salzlandkreis,15089
+Stendal,15090
+Wittenberg,15091
+Erfurt,16051
+Gera,16052
+Jena,16053
+Suhl,16054
+Weimar,16055
+Eisenach,16056
+Eichsfeld,16061
+Nordhausen,16062
+Wartburgkreis,16063
+Unstrut-Hainich-Kreis,16064
+Kyffhäuserkreis,16065
+Schmalkalden-Meiningen,16066
+Gotha,16067
+Sömmerda,16068
+Hildburghausen,16069
+Ilm-Kreis,16070
+Weimarer Land,16071
+Sonneberg,16072
+Saalfeld-Rudolstadt,16073
+Saale-Holzland-Kreis,16074
+Saale-Orla-Kreis,16075
+Greiz,16076
+Altenburger Land,16077
