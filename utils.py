@@ -1,4 +1,5 @@
 import os
+import itertools
 # import sys 
 # sys.path.append('/media/vn/Data/Workspace/leakage_detection_cfrp')
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -8,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from data_acquisition.wing_leakage_data_acquisition_aux import *
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -36,16 +38,20 @@ for device in gpu_devices:
 tf.keras.backend.set_floatx('float64')
 tf.compat.v1.enable_eager_execution()
 
-def load_data():
+def load_data(total_samples):
     data = pd.read_csv('./data_acquisition/wing_leakage_data_samples_filt_bad_out.csv')
     data = data.drop(data[data.quality == 'bad'].index)
-    data = data[data['MFC9'].notna()]
-    # data.columns
+    # data = data[data['MFC9'].notna()]
+    data = data.drop(data[data.sample_number > total_samples].index)
+    data = data.drop(data[data.Comments == 'outside'].index)
+    data = data.drop(data[data.Comments == 'Repeat'].index)
+    data = data.drop(data[data.Comments == 'repeat'].index)
+    data = data.drop(data[data.Comments == 'on port'].index)
+    data = data.drop(data[data.Comments == 'missed'].index)
+    data = data.drop(data[data.Comments == 'Not sure if I will be able to seal the leakage on y axis'].index)
     data = data.drop(columns=['sample_number', 'total flow rate','Comments','Day'])
     data = data.drop(columns=['quality'])
     data = data.rename(columns={'number of leakage':'number_of_leakage'})
-    data['MFC10'] = data['MFC10'] - data['mfc10_residual']
-    data = data.drop(columns=['mfc10_residual'])
     # data.columns
     single_leakage = data[data['number_of_leakage'] == 1]
     single_leakage = single_leakage.drop(columns=['x2', 'y2'])
@@ -53,10 +59,11 @@ def load_data():
 
     single_leakage = single_leakage.drop(columns=['number_of_leakage'])
     two_leakage = two_leakage.drop(columns=['number_of_leakage'])
-
+    # single_leakage.to_csv("single_leakage.csv")   
+    # print(single_leakage.shape, two_leakage.shape)
     return single_leakage, two_leakage
 
-def flipped_data(data_x, data_y):
+def flipped_data(data_x, data_y, blind):
     #code applicable for single leakage case 
     data = data_x.copy()
 
@@ -79,27 +86,42 @@ def flipped_data(data_x, data_y):
     data = np.vstack((temp6, temp7, temp8,
                       temp9, temp10, temp1,
                       temp2, temp3, temp4,
-                      temp4)).transpose()
-    # print(data.shape, data_y.shape)
+                      temp5)).transpose()
+    
+    if blind == False:
+        data_y = pd.DataFrame(data_y, columns=['x1', 'y1'])
+        data = pd.DataFrame(data)
+        index = data_y.index[data_y['x1'] <= 2650].tolist()
+        # print(index)
+        data_y = data_y.drop(index=index)
+        data = data.drop(index=index)
 
     return data, data_y
 
-
-
 def data_check(data):
     data_plot(data)
+    print(data.isna().any())
     data.describe().transpose()
     sns.pairplot(data[data.columns.values], diag_kind='kde')
 
 def model_eval(model, X_test, y_test, scaler_coords, X_train, y_train, X_val, y_val, history):
     y_predictions = model.predict(X_test)
-    print("test_data", mean_squared_error(y_test, y_predictions, squared=True))
-    plot_test_pred(y_test, y_predictions, scaler_coords)
+    # print("test", "{:10.4f}".format(mean_squared_error(y_test, y_predictions, squared=True)))
+    # plot_test_pred(y_test, y_predictions, scaler_coords)
     results_train = model.evaluate(X_train, y_train)
     results_val = model.evaluate(X_val, y_val)
     results_test = model.evaluate(X_test, y_test)
-    plot_loss(history)
-    plot_predictions(y_test, y_predictions)
+    results = list(itertools.chain(results_train, results_val, results_test))
+    results = ["{:10.4f}".format(x) for x in results]
+    # plot_loss(history)
+    # model.summary()
+    # # plot_predictions(y_test, y_predictions)
+    # loss_val = "{:10.4f}".format(results_val[0])
+    # metric_val = "{:10.4f}".format(results_val[1])
+    # loss_test = "{:10.4f}".format(results_test[0])
+    # metric_test = "{:10.4f}".format(results_test[1])
+    # return loss_val, metric_val, loss_test, metric_test
+    return results
     # error_x_histogram(y_test, y_predictions)
     # error_y_histogram(y_test, y_predictions)
 
@@ -153,34 +175,61 @@ def scale_transform_coords(data, span, width):
 
     return data
 
+def model_comparison(model_metric, model_evaluate, label, augmentation, residual_subtract, mfc_sum_scaler, blind_flip):
+    results = np.array((str(label), augmentation, residual_subtract, mfc_sum_scaler, blind_flip))
+    results = np.hstack((results, model_evaluate))
+    model_performance = pd.DataFrame(results.reshape(-1,1).transpose(),
+                                     columns=['model_name','Augmentation', 
+                                              'Residual_subtract', 'mfc_sum_scaler', 'blind_flip',
+                                              'loss_train', 'metric_train',
+                                              'loss_val', 'metric_val', 
+                                              'loss_test', 'metric_test'])
+    model_metric = pd.concat((model_metric, model_performance), axis=0)
+    model_metric.reset_index(drop=True, inplace=True)
+    return model_metric
 
-def load_single_leakage_model_data(span, width):
-    X_train = pd.read_csv('./model_data/X_train.csv', index_col=0).to_numpy()
+def load_single_leakage_model_data(aug, residual_subtract, mfc_sum_scaler, blind):
+    X_train = pd.read_csv('./model_data/X_train.csv', index_col=0)
     X_test = pd.read_csv('./model_data/X_test.csv', index_col=0)
     X_val = pd.read_csv('./model_data/X_val.csv', index_col=0)
 
     y_train = pd.read_csv('./model_data/y_train.csv', index_col=0).to_numpy()
     y_test = pd.read_csv('./model_data/y_test.csv', index_col=0)
     y_val = pd.read_csv('./model_data/y_val.csv', index_col=0)
+    
+    x = [X_train, X_val, X_test]
+    if residual_subtract is True:
+        for data in x:
+            data['MFC10'] = data['MFC10'] - data['mfc10_residual']
 
-    # X_train_flip, y_train_flip = flipped_data(X_train, y_train)
+    X_train = X_train.drop(columns=['mfc10_residual'])
+    X_test = X_test.drop(columns=['mfc10_residual'])
+    X_val = X_val.drop(columns=['mfc10_residual'])
 
-    # print(X_train_flip.shape, y_train_flip.shape)
-    # print(X_train.shape, y_train.shape)
-    # X_train = np.vstack((X_train, X_train_flip))
-    # y_train = np.vstack((y_train, y_train_flip))
+    X_train = X_train.to_numpy()
+
+    if aug == True:
+        X_train_flip, y_train_flip = flipped_data(X_train, y_train, blind)
+        # X_train_flip = X_train_flip.drop(columns=['mfc10_residual'])
+        # print(X_train_flip.shape, y_train_flip.shape)
+        # print(X_train.shape, y_train.shape)
+        X_train = np.vstack((X_train, X_train_flip))
+        y_train = np.vstack((y_train, y_train_flip))
+        print("augmented data is loaded")
 
     X_train = pd.DataFrame(X_train, columns=X_test.columns)
     y_train = pd.DataFrame(y_train, columns=y_test.columns)
 
     # y_train = dim_scaler(y_train, span, width,)
 
-    # X_train, train_flow_sum = mfc_sum_scaler(X_train)
-    # X_test, test_flow_sum = mfc_sum_scaler(X_test)
-    # X_val, val_flow_sum = mfc_sum_scaler(X_val)
+    if mfc_sum_scaler == True:
+        X_train, train_flow_sum = mfc_sum_scaler(X_train)
+        X_test, test_flow_sum = mfc_sum_scaler(X_test)
+        X_val, val_flow_sum = mfc_sum_scaler(X_val)
 
     X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows = normalize_data(X_train, X_test, X_val, y_train, y_test, y_val)
 
+    # print(X_train.shape, X_test.shape, X_val.shape, y_train.shape, y_test.shape, y_val.shape)
     # y_train = scale_transform_coords(y_train, span, width)
     # y_test = scale_transform_coords(y_test, span, width)
     # y_val = scale_transform_coords(y_val, span, width)
@@ -262,7 +311,7 @@ def model_builder(hp):
     return model
 
 #search for the best hyperparameters and train the standard model with original training data
-def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor):
+def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, folder_name):
     tuner = kt.Hyperband(model_builder,
                          objective='val_loss',
                         # objective='val_mean_absolute_error',
@@ -272,15 +321,15 @@ def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor):
                         # Integer, at least 1, the number of times to iterate over the full Hyperband algorithm. One iteration will 
                         # run approximately max_epochs * (math.log(max_epochs, factor) ** 2) cumulative epochs across all trials. It is 
                         # recommended to set this to as high a value as is within your resource budget. Defaults to 1.
-                         directory="tuner_trails",
+                         directory="../tensorflow_log_files/studienarbeit/",
                          seed=0,    
-                         project_name='keras_hyperparameter')
+                         project_name=str(folder_name))
 
     tuner.search_space_summary()
     stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
     tuner.search(X_train, Y_train, epochs=EPOCH, validation_data = (X_val, y_val), callbacks=[stop_early, 
-                                                                                              keras.callbacks.TensorBoard("tuner_trails/tb_logs")
+                                                                                              keras.callbacks.TensorBoard("../tensorflow_log_files/studienarbeit/tb_logs"+str(folder_name))
                                                                                               ])
     #tuner.search(X_train, Y_train, epochs=50, validation_data=(X_test,Y_test), callbacks=[stop_early])
     # Get the optimal hyperparameters
@@ -537,11 +586,21 @@ def benchmark_linear_model(X_train, y_train, X_val, y_val):
 
 def scikit_linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_val, y_val):
     reg = LinearRegression().fit(X_train, y_train)
-    y_predictions = reg.predict(X_train)
-    print("train", mean_squared_error(y_train, y_predictions, squared=True))
-    y_predictions = reg.predict(X_val)
-    print("val", mean_squared_error(y_val, y_predictions, squared=True))
+    y_predictions_train = reg.predict(X_train)
+    # print("train", "{:10.4f}".format(mean_squared_error(y_train, y_predictions, squared=True)))
+    y_predictions_val = reg.predict(X_val)
+    # print("val", "{:10.4f}".format(mean_squared_error(y_val, y_predictions, squared=True)))
     y_predictions = reg.predict(X_test)
-    print("test_data", mean_squared_error(y_test, y_predictions, squared=True))
-    plot_test_pred(y_test, y_predictions, scaler_coords)
-    plot_predictions(y_test, y_predictions)
+    loss_test = "{:10.4f}".format(mean_squared_error(y_test, y_predictions, squared=True))
+    metric_test = "{:10.4f}".format(mean_absolute_error(y_test, y_predictions))
+
+    loss_val = "{:10.4f}".format(mean_squared_error(y_val, y_predictions_val, squared=True))
+    metric_val = "{:10.4f}".format(mean_absolute_error(y_val, y_predictions_val))
+
+    loss_train = "{:10.4f}".format(mean_squared_error(y_train, y_predictions_train, squared=True))
+    metric_train = "{:10.4f}".format(mean_absolute_error(y_train, y_predictions_train))
+
+    results = [loss_train, metric_train, loss_val, metric_val, loss_test, metric_test]
+    # print(results)
+    results = [float(x) for x in results]
+    return results
