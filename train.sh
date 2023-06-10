@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=ENN_100
+#SBATCH --job-name=leak_exp
 ##SBATCH --partition=standard,fat
 #SBATCH --cpus-per-task=2
 #SBATCH --time=02-00:00:00
@@ -21,4 +21,4 @@ echo -e "Job internal GPU id(s): $CUDA_VISIBLE_DEVICES"
 echo -e "Job external GPU id(s): ${SLURM_JOB_GPUS}"
 
 # Execute programs
-srun python -u hyper_parameter_tuning_100.py
+srun python -u main.py
