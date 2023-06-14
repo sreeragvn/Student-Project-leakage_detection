@@ -1,0 +1,4 @@
+Unnamed: 0,model_name,Augmentation,Residual_subtract,mfc_sum_scaler,blind_flip,loss_train,metric_train,loss_val,metric_val,loss_test,metric_test
+,linear_regression,False,False,False,False,0.0254,0.1072,0.0261,0.115,0.0759,0.1413
+,nn_linear_regression_0,False,False,False,False,    0.0256,    0.1070,    0.0266,    0.1157,    0.0771,    0.1427
+,nn_hyper_model0,False,False,False,False,    0.0648,    0.1764,    0.0746,    0.1854,    0.0691,    0.1894

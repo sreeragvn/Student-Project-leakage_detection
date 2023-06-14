@@ -30,35 +30,28 @@ gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 for device in gpu_devices:
     tf.config.experimental.set_memory_growth(device, True)
 tf.keras.backend.set_floatx('float64')
-# tf.compat.v1.enable_eager_execution()
-# tf.debugging.set_log_device_placement(True)
 
-def model_eval(model, X_test, y_test, scaler_coords, X_train, y_train, X_val, y_val, history):
+def model_eval(model, X_test, y_test, X_train, y_train, X_val, y_val):
     y_predictions = model.predict(X_test)
-    # print("test", "{:10.4f}".format(mean_squared_error(y_test, y_predictions, squared=True)))
-    # plot_test_pred(y_test, y_predictions, scaler_coords)
-    results_train = model.evaluate(X_train, y_train)
-    results_val = model.evaluate(X_val, y_val)
-    results_test = model.evaluate(X_test, y_test)
+    results_train = model.evaluate(X_train, y_train, verbose=0)
+    results_val = model.evaluate(X_val, y_val, verbose=0)
+    results_test = model.evaluate(X_test, y_test, verbose=0)
     results = list(itertools.chain(results_train, results_val, results_test))
     results = ["{:10.4f}".format(x) for x in results]
-    # plot_loss(history)
-    # model.summary()
-    # # plot_predictions(y_test, y_predictions)
-    # loss_val = "{:10.4f}".format(results_val[0])
-    # metric_val = "{:10.4f}".format(results_val[1])
-    # loss_test = "{:10.4f}".format(results_test[0])
-    # metric_test = "{:10.4f}".format(results_test[1])
-    # return loss_val, metric_val, loss_test, metric_test
-    return results
-    # error_x_histogram(y_test, y_predictions)
-    # error_y_histogram(y_test, y_predictions)
+    return results, y_predictions
 
+def numpy_to_tensor(X_train, X_test, X_val, y_train, y_test, y_val):
+    X_train = tf.convert_to_tensor(X_train, np.float32)
+    X_test = tf.convert_to_tensor(X_test, np.float32)
+    X_val = tf.convert_to_tensor(X_val, np.float32)
+    y_train = tf.convert_to_tensor(y_train, np.float32)
+    y_test = tf.convert_to_tensor(y_test, np.float32)
+    y_val = tf.convert_to_tensor(y_val, np.float32)
+    return X_train, X_test, X_val, y_train, y_test, y_val
 
-
-def model_comparison(model_metric, model_evaluate, label, augmentation, residual_subtract, mfc_sum_scaler, blind_flip):
-    results = np.array((str(label), augmentation, residual_subtract, mfc_sum_scaler, blind_flip))
-    results = np.hstack((results, model_evaluate))
+def model_comparison(model_metric, model_evaluate, label, augmentation, residual_subtract, mfc_sum_scale, blind_flip):
+    results = np.array((str(label), augmentation, residual_subtract, mfc_sum_scale, blind_flip), dtype=object)
+    results = np.hstack((results, np.array(model_evaluate, dtype=object)))
     model_performance = pd.DataFrame(results.reshape(-1,1).transpose(),
                                      columns=['model_name','Augmentation', 
                                               'Residual_subtract', 'mfc_sum_scaler', 'blind_flip',
@@ -95,16 +88,19 @@ def model_builder(hp):
     
     model.compile(optimizer=tf.keras.optimizers.Nadam(learning_rate=learning_rate),
                 loss="mse",
-                # loss = 'mean_squared_logarithmic_error',
                 metrics='mae')
 
     return model
 
 #search for the best hyperparameters and train the standard model with original training data
-def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, folder_name):
+def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, augmentation, residual_subtract, tot_mfc_scaler,blind_flip):
+    folder_name = str('keras_hyperparameter_aug_'+
+                      str(augmentation)+"_res_"+
+                      str(residual_subtract)+"_mfcsum_"+
+                      str(tot_mfc_scaler)+"_blind_"+
+                      str(blind_flip))
     tuner = kt.Hyperband(model_builder,
                          objective='val_loss',
-                        # objective='val_mean_absolute_error',
                          max_epochs=EPOCH,
                          factor=factor,
                          hyperband_iterations = 1,
@@ -140,7 +136,6 @@ def benchmark_linear_model(X_train, y_train, X_val, y_val):
     # linear_model.compile(loss='mean_squared_error', optimizer=tf.keras.optimizers.Adam(0.01), metrics='mae')
     linear_model.compile(
                         loss='mean_squared_error',
-                        # loss= 'mean_squared_logarithmic_error',
                         optimizer=tf.keras.optimizers.Nadam(0.01), metrics='mae')
     
     # linear_model.summary()
@@ -156,7 +151,7 @@ def benchmark_linear_model(X_train, y_train, X_val, y_val):
     
     return linear_model, history
 
-def scikit_linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_val, y_val):
+def linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_val, y_val):
     reg = LinearRegression().fit(X_train, y_train)
     y_predictions_train = reg.predict(X_train)
     # print("train", "{:10.4f}".format(mean_squared_error(y_train, y_predictions, squared=True)))
@@ -175,4 +170,4 @@ def scikit_linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_
     results = [loss_train, metric_train, loss_val, metric_val, loss_test, metric_test]
     # print(results)
     results = [float(x) for x in results]
-    return results
+    return results, y_predictions

@@ -12,7 +12,7 @@
 #module load lib/cudnn/7.6.1.34_cuda_10.0
 #module load anaconda/3-5.0.1
 
-source activate fpds
+source activate tf-200-GPU-py37
 
 # Extra output
 nvidia-smi

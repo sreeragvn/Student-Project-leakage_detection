@@ -1,20 +1,20 @@
 # %%
-from utils.data_validation import *
-from utils.data_preprocess import *
-from utils.module import *
-from utils.model_evaluation import *
+from utils.data_preprocess import load_data, split_xy_save, load_single_leakage_model_data
+from utils.module import model_eval, hyper_model, model_comparison, linear_regression, numpy_to_tensor, benchmark_linear_model
+import itertools
+import pandas as pd 
 # single_leakage_data_spread(single_leakage)
 augmentation = [True, False] # set aug = True to load augmented where the data is flipped across x axis through the centre
 blind_flip = [True, False]
 residual_subtract = [True, False]
 tot_mfc_scaler = [True, False]
-experiment_repeat = 5
+experiment_repeat =1
 
 span = 16048
 width = 5233
 total_samples = 862
-EPOCH = 100
-factor = 2
+EPOCH = 1
+factor = 20
 rebuild_train = False
 test = list(itertools.product(augmentation,residual_subtract,tot_mfc_scaler, blind_flip))
 # %%
@@ -27,41 +27,40 @@ if rebuild_train:
     print('data rebuilt')
 # %%
 model_metric = pd.DataFrame()
-model_metric.to_csv("results/model_performance.csv")
+model_performance_file = "results/model_performance.csv"
+model_metric.to_csv(model_performance_file)
 for i in range(experiment_repeat):
     for augmentation, residual_subtract, tot_mfc_scaler, blind_flip in test:
         if augmentation == False and blind_flip == True:
             continue
-        model_metric = pd.read_csv("results/model_performance.csv", index_col=None)
-        X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows = load_single_leakage_model_data(str(augmentation),str(residual_subtract), str(tot_mfc_scaler), str(blind_flip))
-        model_evaluate = scikit_linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_val, y_val)
-        model_metric = model_comparison(model_metric, model_evaluate, augmentation = str(augmentation),
-                                        residual_subtract = str(residual_subtract), mfc_sum_scaler = str(tot_mfc_scaler), 
-                                        blind_flip = str(blind_flip), label = "linear_regression")
+        if augmentation != False or residual_subtract != False or tot_mfc_scaler != False or blind_flip != False:
+            continue
+        model_metric = pd.read_csv(model_performance_file, index_col=None)
+        X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows = load_single_leakage_model_data(augmentation,
+                                                                                                             residual_subtract,
+                                                                                                              tot_mfc_scaler, 
+                                                                                                              blind_flip)
+        model_evaluate, y_pred = linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_val, y_val)
+        model_metric = model_comparison(model_metric, model_evaluate, augmentation = augmentation, 
+                                        residual_subtract = residual_subtract, mfc_sum_scale = tot_mfc_scaler, 
+                                        blind_flip = blind_flip, label = "linear_regression")
     # %%
-        X_train = tf.convert_to_tensor(X_train, np.float32)
-        X_test = tf.convert_to_tensor(X_test, np.float32)
-        X_val = tf.convert_to_tensor(X_val, np.float32)
-        y_train = tf.convert_to_tensor(y_train, np.float32)
-        y_test = tf.convert_to_tensor(y_test, np.float32)
-        y_val = tf.convert_to_tensor(y_val, np.float32)
+        X_train, X_test, X_val, y_train, y_test, y_val = numpy_to_tensor(X_train, X_test, X_val, y_train, y_test, y_val)
 
         linear_model, history = benchmark_linear_model(X_train, y_train, X_val, y_val)
-        model_evaluate = model_eval(linear_model, X_test, y_test, scaler_coords, X_train, y_train, X_val, y_val, history)
-        model_metric = model_comparison(model_metric, model_evaluate, augmentation = str(augmentation), 
-                                        residual_subtract = str(residual_subtract), mfc_sum_scaler = str(tot_mfc_scaler), 
-                                        blind_flip = str(blind_flip), label = "nn_linear_regression_"+str(i))
+        model_evaluate, y_pred = model_eval(linear_model, X_test, y_test, X_train, y_train, X_val, y_val)
+        model_metric = model_comparison(model_metric, model_evaluate, augmentation = augmentation, 
+                                        residual_subtract = residual_subtract, mfc_sum_scale = tot_mfc_scaler, 
+                                        blind_flip = blind_flip, label = "nn_linear_regression_"+str(i))
 
     # %%
     # Hyper parameter tuning
         best_hps, best_model, tuner, history = hyper_model(X_train,y_train, X_val, y_val,
-                                                        EPOCH, factor,
-                                                        folder_name = str('keras_hyperparameter_aug_'+str(augmentation)+"_res_"+
-                                                                          str(residual_subtract)+"_mfcsum_"+str(tot_mfc_scaler)+
-                                                                          "_blind_"+str(blind_flip)))
-        model_evaluate = model_eval(best_model, X_test, y_test, scaler_coords, X_train, y_train, X_val, y_val, history)
-        model_metric = model_comparison(model_metric, model_evaluate, augmentation = str(augmentation), 
-                                        residual_subtract = str(residual_subtract), mfc_sum_scaler = str(tot_mfc_scaler), 
-                                        blind_flip = str(blind_flip), label = "nn_hyper_model_"+str(i))
-        model_metric.to_csv("results/model_performance.csv", index=False)
+                                                        EPOCH, factor,augmentation,
+                                                        residual_subtract,tot_mfc_scaler,blind_flip)
+        model_evaluate, y_pred = model_eval(best_model, X_test, y_test, X_train, y_train, X_val, y_val)
+        model_metric = model_comparison(model_metric, model_evaluate, augmentation = augmentation, 
+                                        residual_subtract = residual_subtract, mfc_sum_scale = tot_mfc_scaler, 
+                                        blind_flip = blind_flip, label = "nn_hyper_model"+str(i))
+        model_metric.to_csv(model_performance_file, index=False)
 # %%

@@ -95,11 +95,6 @@ def split_xy_save(single_leakage):
 
 
 def mfc_sum_scaler(flow_data):
-    # data['mfcsum'] = data['MFC1'] + data['MFC2'] + data['MFC3'] + data['MFC4'] + data['MFC5'] + data['MFC6'] + data['MFC7'] + data['MFC8'] + data['MFC9'] + data['MFC10']
-    # data[['MFC1', 'MFC2', 'MFC3', 'MFC4', 'MFC5', 'MFC6', 'MFC7', 'MFC8', 'MFC9', 'MFC10']] = data[['MFC1', 'MFC2', 'MFC3', 'MFC4', 'MFC5', 'MFC6', 'MFC7', 'MFC8', 'MFC9', 'MFC10']].div(data['mfcsum'], axis=0)
-    # mfc_sum = data['mfcsum']
-    # data = data.drop(columns=['mfcsum'])
-
     mfc_sum = np.sum(flow_data, axis=1)
     flow_data = flow_data / mfc_sum[:,None]
     return flow_data, mfc_sum
@@ -132,7 +127,7 @@ def scale_transform_coords(data, span, width):
 
     return data
 
-def load_single_leakage_model_data(aug, residual_subtract, mfc_sum_scaler, blind):
+def load_single_leakage_model_data(aug, residual_subtract, mfc_sum_scale, blind):
     X_train = pd.read_csv('./model_data/X_train.csv', index_col=0)
     X_test = pd.read_csv('./model_data/X_test.csv', index_col=0)
     X_val = pd.read_csv('./model_data/X_val.csv', index_col=0)
@@ -165,8 +160,7 @@ def load_single_leakage_model_data(aug, residual_subtract, mfc_sum_scaler, blind
     y_train = pd.DataFrame(y_train, columns=y_test.columns)
 
     # y_train = dim_scaler(y_train, span, width,)
-
-    if mfc_sum_scaler == True:
+    if mfc_sum_scale == True:
         X_train, train_flow_sum = mfc_sum_scaler(X_train)
         X_test, test_flow_sum = mfc_sum_scaler(X_test)
         X_val, val_flow_sum = mfc_sum_scaler(X_val)
