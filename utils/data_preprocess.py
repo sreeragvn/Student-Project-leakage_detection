@@ -37,8 +37,7 @@ def load_data(total_samples):
 
     single_leakage = single_leakage.drop(columns=['number_of_leakage'])
     two_leakage = two_leakage.drop(columns=['number_of_leakage'])
-    # single_leakage.to_csv("single_leakage.csv")   
-    # print(single_leakage.shape, two_leakage.shape)
+    # single_leakage.to_csv("single_leakage.csv")
     return single_leakage, two_leakage
 
 def flipped_data(data_x, data_y, blind):
@@ -118,10 +117,7 @@ def normalize_data(X_train, X_test, X_val, y_train, y_test, y_val):
 
     return X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows
 
-def scale_transform_coords(data, span, width):
-    # data[:, 0:1] = data[:, 0:1]/(span)
-    # data[:, 1:2] = data[:, 1:2]/(width)
-
+def scale_transform_coords(data):
     data[:, 0:1] = data[:, 0:1] * 2 - 1
     data[:, 1:2] = data[:, 1:2] * 2 - 1
 
@@ -136,10 +132,10 @@ def load_single_leakage_model_data(aug, residual_subtract, mfc_sum_scale, blind)
     y_test = pd.read_csv('./model_data/y_test.csv', index_col=0)
     y_val = pd.read_csv('./model_data/y_val.csv', index_col=0)
     
-    x = [X_train, X_val, X_test]
     if residual_subtract is True:
-        for data in x:
-            data['MFC10'] = data['MFC10'] - data['mfc10_residual']
+        X_train['MFC10'] = X_train['MFC10'] - X_train['mfc10_residual']
+        X_test['MFC10'] = X_test['MFC10'] - X_test['mfc10_residual']
+        X_val['MFC10'] = X_val['MFC10'] - X_val['mfc10_residual']
 
     X_train = X_train.drop(columns=['mfc10_residual'])
     X_test = X_test.drop(columns=['mfc10_residual'])
@@ -168,8 +164,8 @@ def load_single_leakage_model_data(aug, residual_subtract, mfc_sum_scale, blind)
     X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows = normalize_data(X_train, X_test, X_val, y_train, y_test, y_val)
 
     # print(X_train.shape, X_test.shape, X_val.shape, y_train.shape, y_test.shape, y_val.shape)
-    # y_train = scale_transform_coords(y_train, span, width)
-    # y_test = scale_transform_coords(y_test, span, width)
-    # y_val = scale_transform_coords(y_val, span, width)
+    # y_train = scale_transform_coords(y_train)
+    # y_test = scale_transform_coords(y_test)
+    # y_val = scale_transform_coords(y_val)
 
     return X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows

@@ -9,6 +9,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 import warnings
 warnings.filterwarnings("ignore")
+import yaml
 
 # Libraries
 import numpy as np
@@ -30,6 +31,9 @@ gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 for device in gpu_devices:
     tf.config.experimental.set_memory_growth(device, True)
 tf.keras.backend.set_floatx('float64')
+
+with open("config.yml", "r") as ymlfile:
+    cfg = yaml.full_load(ymlfile)
 
 def model_eval(model, X_test, y_test, X_train, y_train, X_val, y_val):
     y_predictions = model.predict(X_test)
@@ -53,11 +57,7 @@ def model_comparison(model_metric, model_evaluate, label, augmentation, residual
     results = np.array((str(label), augmentation, residual_subtract, mfc_sum_scale, blind_flip), dtype=object)
     results = np.hstack((results, np.array(model_evaluate, dtype=object)))
     model_performance = pd.DataFrame(results.reshape(-1,1).transpose(),
-                                     columns=['model_name','Augmentation', 
-                                              'Residual_subtract', 'mfc_sum_scaler', 'blind_flip',
-                                              'loss_train', 'metric_train',
-                                              'loss_val', 'metric_val', 
-                                              'loss_test', 'metric_test'])
+                                     columns=cfg['model_performance']['column_metrics'])
     model_metric = pd.concat((model_metric, model_performance), axis=0)
     model_metric.reset_index(drop=True, inplace=True)
     return model_metric
@@ -93,7 +93,7 @@ def model_builder(hp):
     return model
 
 #search for the best hyperparameters and train the standard model with original training data
-def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, augmentation, residual_subtract, tot_mfc_scaler,blind_flip):
+def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, residual_subtract, tot_mfc_scaler,blind_flip):
     folder_name = str('keras_hyperparameter_aug_'+
                       str(augmentation)+"_res_"+
                       str(residual_subtract)+"_mfcsum_"+
@@ -101,7 +101,7 @@ def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, augmentation, resi
                       str(blind_flip))
     tuner = kt.Hyperband(model_builder,
                          objective='val_loss',
-                         max_epochs=EPOCH,
+                         max_epochs=epoch,
                          factor=factor,
                          hyperband_iterations = 1,
                         # Integer, at least 1, the number of times to iterate over the full Hyperband algorithm. One iteration will 
@@ -114,7 +114,7 @@ def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, augmentation, resi
     tuner.search_space_summary()
     stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
-    tuner.search(X_train, Y_train, epochs=EPOCH, validation_data = (X_val, y_val), callbacks=[stop_early, 
+    tuner.search(X_train, Y_train, epochs=epoch, validation_data = (X_val, y_val), callbacks=[stop_early, 
                                                                                             #   keras.callbacks.TensorBoard("../tensorflow_log_files/studienarbeit/tb_logs"+str(folder_name))
                                                                                               ])
     #tuner.search(X_train, Y_train, epochs=50, validation_data=(X_test,Y_test), callbacks=[stop_early])
@@ -127,7 +127,7 @@ def hyper_model(X_train,Y_train, X_val, y_val, EPOCH, factor, augmentation, resi
     # """)
 
     model = tuner.hypermodel.build(best_hps)
-    history = model.fit(X_train, Y_train, epochs=EPOCH, validation_data = (X_val, y_val), shuffle= False)
+    history = model.fit(X_train, Y_train, epochs=epoch, validation_data = (X_val, y_val), shuffle= False)
 
     return best_hps, model, tuner, history
 
@@ -151,7 +151,7 @@ def benchmark_linear_model(X_train, y_train, X_val, y_val):
     
     return linear_model, history
 
-def linear_regression(X_train, y_train, X_test, y_test, scaler_coords, X_val, y_val):
+def linear_regression(X_train, y_train, X_test, y_test, X_val, y_val):
     reg = LinearRegression().fit(X_train, y_train)
     y_predictions_train = reg.predict(X_train)
     # print("train", "{:10.4f}".format(mean_squared_error(y_train, y_predictions, squared=True)))

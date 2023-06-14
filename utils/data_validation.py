@@ -17,6 +17,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
+x_range = np.arange(180, 16048, 250)
+y_range = np.arange(100, 5233, 250)
+X, Y = np.meshgrid(x_range, y_range)
+
 def data_check(data):
     data_plot(data)
     print(data.isna().any())
@@ -169,4 +173,16 @@ def meshgrid_to_coords(i,j):
     x = X[-j - 10, i+31]
     y = Y[-j - 10, i+31]
     print(x,y)
+
+    plt.plot([0, 7930], [0, 0], 'k')
+    plt.plot([7930, 16048], [0, 1149], 'k')
+    plt.plot([16048, 16048], [1149, 4386], 'k')
+    plt.plot([16048, 7843], [4386, 5233], 'k')
+    plt.plot([7843, 2493], [5233, 5233], 'k')
+    plt.plot([2493, 0], [5233, 0], 'k')
+    plt.xlim([-1000, 17000])
+    plt.ylim([-1000, 6000])
+    plt.xticks([])
+    plt.yticks([])
+    plt.gca().set_aspect('equal')
     

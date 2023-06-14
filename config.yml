@@ -1,0 +1,21 @@
+experiment:
+    augmentation: [True, False]
+    blind_flip: [True, False]
+    residual_subtract: [True, False]
+    tot_mfc_scaler: [True, False]
+    experiment_repeat: 5
+    total_samples : 862
+    EPOCH : 100
+    factor : 2
+    rebuild_train : False
+
+geometry:
+    span: 16048
+    width: 5233
+
+model_performance:
+    column_metrics: ['model_name','Augmentation', 
+                    'Residual_subtract', 'mfc_sum_scaler', 'blind_flip',
+                    'loss_train', 'metric_train',
+                    'loss_val', 'metric_val', 
+                    'loss_test', 'metric_test']
