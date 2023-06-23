@@ -2,6 +2,7 @@
 # sys.path.append('/media/vn/Data/Workspace/leakage_detection_cfrp')
 import warnings
 warnings.filterwarnings("ignore")
+from typing import Optional
 
 # Libraries
 import numpy as np
@@ -56,7 +57,7 @@ def error_y_histogram(y_test, y_predictions):
     plt.tight_layout()
     plt.show()
 
-def plot_test_pred(test, pred, scaler_coords):
+def plot_test_pred(test, pred, scaler_coords : Optional[object] = None):
     # pred = pred * test_flow_sum[:,None]
     # test = test * test_flow_sum[:,None]
 
@@ -65,8 +66,10 @@ def plot_test_pred(test, pred, scaler_coords):
     # test[:, 0:1] = (test[:, 0:1] + 1) / 2
     # test[:, 1:2] = (test[:, 1:2] + 1) / 2
 
-    pred = scaler_coords.inverse_transform(pred)
-    test = scaler_coords.inverse_transform(test)
+    if scaler_coords is not None:
+        print("scaled")
+        pred = scaler_coords.inverse_transform(pred)
+        test = scaler_coords.inverse_transform(test)
     plt.figure(figsize=(40, 20))
     
     # plt.title(f'Sample Number {sample_number}', fontsize=20)
