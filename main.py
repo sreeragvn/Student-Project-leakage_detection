@@ -4,6 +4,7 @@ from utils.module import model_eval, hyper_model, model_comparison, linear_regre
 import itertools
 import pandas as pd 
 import yaml
+import tensorflow as tf
 
 with open("config.yml", "r") as ymlfile:
     cfg = yaml.full_load(ymlfile)
@@ -13,10 +14,10 @@ test = list(itertools.product(cfg['experiment']['augmentation'],
                               cfg['experiment']['tot_mfc_scaler'],
                               cfg['experiment']['blind_flip']))
 # %%
-single_leakage, two_leakage = load_data(total_samples = cfg['experiment']['total_samples'])
 
 # %%
 if cfg['experiment']['rebuild_train']:
+    single_leakage, two_leakage = load_data(total_samples = cfg['experiment']['total_samples'])
     split_xy_save(single_leakage)
     print('data rebuilt')
 # %%
@@ -34,6 +35,12 @@ for i in range(cfg['experiment']['experiment_repeat']):
                                                                                                              residual_subtract,
                                                                                                               tot_mfc_scaler, 
                                                                                                               blind_flip)
+        # print(X_train.shape)
+        # print(X_test.shape)
+        # print(X_val.shape)
+        # print(y_train.shape)
+        # print(y_test.shape)
+        # print(y_val.shape)
         model_evaluate, y_pred = linear_regression(X_train, y_train, X_test, y_test, X_val, y_val)
         model_metric = model_comparison(model_metric, model_evaluate, augmentation = augmentation, 
                                         residual_subtract = residual_subtract, mfc_sum_scale = tot_mfc_scaler, 
@@ -57,4 +64,7 @@ for i in range(cfg['experiment']['experiment_repeat']):
                                         residual_subtract = residual_subtract, mfc_sum_scale = tot_mfc_scaler, 
                                         blind_flip = blind_flip, label = "nn_hyper_model"+str(i))
         model_metric.to_csv(model_performance_file, index=False)
+    break
 # %%
+best_model.summary()
+best_model.save('saved_model/single_leakage_model')

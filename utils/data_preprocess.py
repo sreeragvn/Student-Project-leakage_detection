@@ -17,7 +17,7 @@ import pandas as pd
 np.random.seed(0)
 
 def load_data(total_samples):
-    data = pd.read_csv('./data_acquisition/wing_leakage_data_samples_filt_bad_out.csv')
+    data = pd.read_csv('../data_acquisition/wing_leakage_data_samples_filt_bad_out.csv')
     data = data.drop(data[data.quality == 'bad'].index)
     # data = data[data['MFC9'].notna()]
     data = data.drop(data[data.sample_number > total_samples].index)

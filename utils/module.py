@@ -37,9 +37,9 @@ with open("config.yml", "r") as ymlfile:
 
 def model_eval(model, X_test, y_test, X_train, y_train, X_val, y_val):
     y_predictions = model.predict(X_test)
-    results_train = model.evaluate(X_train, y_train, verbose=0)
-    results_val = model.evaluate(X_val, y_val, verbose=0)
-    results_test = model.evaluate(X_test, y_test, verbose=0)
+    results_train = model.evaluate(X_train, y_train, verbose=1)
+    results_val = model.evaluate(X_val, y_val, verbose=1)
+    results_test = model.evaluate(X_test, y_test, verbose=1)
     results = list(itertools.chain(results_train, results_val, results_test))
     results = ["{:10.4f}".format(x) for x in results]
     return results, y_predictions
@@ -72,10 +72,11 @@ def model_builder(hp):
             keras.layers.Dense(
                 units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
                 activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+            )
         )
-    )
+        # model.add(layers.Dropout(rate=0.1))
     if hp.Boolean("dropout"):
-        model.add(layers.Dropout(rate=0.1))
+      model.add(layers.Dropout(rate=0.1))
     model.add(keras.layers.Dense(units=2, activation= "linear"))
 
     # Tune the learning rate for the optimizer
@@ -107,7 +108,7 @@ def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, resi
                         # Integer, at least 1, the number of times to iterate over the full Hyperband algorithm. One iteration will 
                         # run approximately max_epochs * (math.log(max_epochs, factor) ** 2) cumulative epochs across all trials. It is 
                         # recommended to set this to as high a value as is within your resource budget. Defaults to 1.
-                         directory="../tensorflow_log_files/studienarbeit/",
+                         directory="../../tensorflow_log_files/studienarbeit/",
                          seed=0,    
                          project_name=str(folder_name))
 
