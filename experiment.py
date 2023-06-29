@@ -67,4 +67,4 @@ for i in range(cfg['experiment']['experiment_repeat']):
     break
 # %%
 best_model.summary()
-best_model.save('saved_model/single_leakage_model')
+best_model.save('saved_model/single_leakage_model_dropout')

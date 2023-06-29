@@ -74,9 +74,9 @@ def model_builder(hp):
                 activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
             )
         )
-        # model.add(layers.Dropout(rate=0.1))
-    if hp.Boolean("dropout"):
-      model.add(layers.Dropout(rate=0.1))
+        model.add(layers.Dropout(rate=0.1))
+    # if hp.Boolean("dropout"):
+    #   model.add(layers.Dropout(rate=0.1))
     model.add(keras.layers.Dense(units=2, activation= "linear"))
 
     # Tune the learning rate for the optimizer
@@ -99,7 +99,7 @@ def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, resi
                       str(augmentation)+"_res_"+
                       str(residual_subtract)+"_mfcsum_"+
                       str(tot_mfc_scaler)+"_blind_"+
-                      str(blind_flip))
+                      str(blind_flip)+ "uncertain")
     tuner = kt.Hyperband(model_builder,
                          objective='val_loss',
                          max_epochs=epoch,

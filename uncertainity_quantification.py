@@ -24,16 +24,17 @@ stoch_model = tf.keras.Sequential(
         model.get_layer('dense_4'),
     ]
     )
-stoch_model.build((1,10)) 
+# stoch_model.build((1,10)) 
 # stoch_model.summary()
 stoch_model.compile(optimizer=tf.keras.optimizers.Nadam(learning_rate=model.optimizer.lr.numpy()),
                 loss="mse",
                 metrics='mae')
+history = stoch_model.fit(X_train, y_train, epochs=100, validation_data = (X_val, y_val), shuffle= False)
 model_evaluate, y_pred = model_eval(stoch_model, X_test, y_test, X_train, y_train, X_val, y_val)
 
 # %%
 pred=np.stack([stoch_model(X_test,training=True) 
-               for sample in range(100)])
+               for sample in range(1000)])
 
 pred_mean=pred.mean(axis=0)
 pred_std = pred.std(axis=0) 
