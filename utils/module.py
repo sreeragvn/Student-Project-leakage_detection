@@ -53,9 +53,10 @@ def numpy_to_tensor(X_train, X_test, X_val, y_train, y_test, y_val):
     y_val = tf.convert_to_tensor(y_val, np.float32)
     return X_train, X_test, X_val, y_train, y_test, y_val
 
-def model_comparison(model_metric, model_evaluate, label, augmentation, residual_subtract, mfc_sum_scale, blind_flip):
-    results = np.array((str(label), augmentation, residual_subtract, mfc_sum_scale, blind_flip), dtype=object)
+def model_comparison(model_metric, model_evaluate, label, augmentation, residual_subtract, blind_flip, tot_flow, res_flow, tot_resflow):
+    results = np.array((str(label), augmentation, residual_subtract, blind_flip, tot_flow, res_flow, tot_resflow), dtype=object)
     results = np.hstack((results, np.array(model_evaluate, dtype=object)))
+    # print(results.shape)
     model_performance = pd.DataFrame(results.reshape(-1,1).transpose(),
                                      columns=cfg['model_performance']['column_metrics'])
     model_metric = pd.concat((model_metric, model_performance), axis=0)
@@ -63,7 +64,7 @@ def model_comparison(model_metric, model_evaluate, label, augmentation, residual
     return model_metric
 
 #Define the model using model builder from keras tuner
-def model_builder(hp):
+def model_builder_single_dropout(hp):
     model = keras.Sequential()
 
     # Choose an optimal value between 32-512
@@ -72,12 +73,76 @@ def model_builder(hp):
             keras.layers.Dense(
                 units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
                 activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+                kernel_initializer='he_uniform'
             )
         )
         model.add(layers.Dropout(rate=0.1))
     # if hp.Boolean("dropout"):
     #   model.add(layers.Dropout(rate=0.1))
-    model.add(keras.layers.Dense(units=2, activation= "linear"))
+    model.add(keras.layers.Dense(units=2, activation= "linear", kernel_initializer='he_uniform'))
+
+    # Tune the learning rate for the optimizer
+    # Choose an optimal value from 0.01, 0.001, or 0.0001
+    # hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+    learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-1, sampling="log")
+
+    # model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+    #             loss="mse",  metrics='mae')
+    
+    model.compile(optimizer=tf.keras.optimizers.Nadam(learning_rate=learning_rate),
+                loss="mse",
+                metrics='mae')
+
+    return model
+
+
+#Define the model using model builder from keras tuner
+def model_builder_single(hp):
+    model = keras.Sequential()
+
+    # Choose an optimal value between 32-512
+    for i in range(hp.Int("num_layers", 1, 15)):
+        model.add(
+            keras.layers.Dense(
+                units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
+                activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+                kernel_initializer='he_uniform'
+            )
+        )
+    if hp.Boolean("dropout"):
+      model.add(layers.Dropout(rate=0.1))
+    model.add(keras.layers.Dense(units=2, activation= "linear", kernel_initializer='he_uniform'))
+
+    # Tune the learning rate for the optimizer
+    # Choose an optimal value from 0.01, 0.001, or 0.0001
+    # hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+    learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-1, sampling="log")
+
+    # model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
+    #             loss="mse",  metrics='mae')
+    
+    model.compile(optimizer=tf.keras.optimizers.Nadam(learning_rate=learning_rate),
+                loss="mse",
+                metrics='mae')
+
+    return model
+
+#Define the model using model builder from keras tuner
+def model_builder_yolo(hp):
+    model = keras.Sequential()
+
+    # Choose an optimal value between 32-512
+    for i in range(hp.Int("num_layers", 1, 15)):
+        model.add(
+            keras.layers.Dense(
+                units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
+                activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+                kernel_initializer='he_uniform'
+            )
+        )
+    if hp.Boolean("dropout"):
+      model.add(layers.Dropout(rate=0.1))
+    model.add(keras.layers.Dense(units=6, activation= "linear", kernel_initializer='he_uniform'))
 
     # Tune the learning rate for the optimizer
     # Choose an optimal value from 0.01, 0.001, or 0.0001
@@ -94,13 +159,16 @@ def model_builder(hp):
     return model
 
 #search for the best hyperparameters and train the standard model with original training data
-def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, residual_subtract, tot_mfc_scaler,blind_flip):
-    folder_name = str('keras_hyperparameter_aug_'+
-                      str(augmentation)+"_res_"+
-                      str(residual_subtract)+"_mfcsum_"+
-                      str(tot_mfc_scaler)+"_blind_"+
-                      str(blind_flip)+ "uncertain")
-    tuner = kt.Hyperband(model_builder,
+def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, residual_subtract, 
+                blind_flip, tot_flow, res_flow, tot_resflow):
+    folder_name = str('keras_hyperparameter_aug_'+ str(augmentation)+
+                      "_res_"+ str(residual_subtract)+
+                      "_blind_"+ str(blind_flip)+
+                      "tot_flow"+ str(tot_flow)+
+                      "res_flow"+ str(res_flow)+
+                      "tot_resflow"+ str(tot_resflow)
+                    )
+    tuner = kt.Hyperband(model_builder_single,
                          objective='val_loss',
                          max_epochs=epoch,
                          factor=factor,
@@ -122,13 +190,13 @@ def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, resi
     # Get the optimal hyperparameters
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
 
-    # print(f"""
-    # The hyperparameter search is complete. The optimal learning rate for the optimizer
-    # is {best_hps.get('learning_rate')}.
-    # """)
-
     model = tuner.hypermodel.build(best_hps)
     history = model.fit(X_train, Y_train, epochs=epoch, validation_data = (X_val, y_val), shuffle= False)
+
+    print(f"""
+    The hyperparameter search is complete. The optimal learning rate for the optimizer
+    is {model.optimizer.lr.numpy()}.
+    """)
 
     return best_hps, model, tuner, history
 
@@ -172,3 +240,11 @@ def linear_regression(X_train, y_train, X_test, y_test, X_val, y_val):
     # print(results)
     results = [float(x) for x in results]
     return results, y_predictions
+
+def get_activation_functions(model):
+    for i, layer in enumerate(model.layers):
+        print(i, layer)
+        try:
+            print(" ", layer.activation)
+        except AttributeError:
+            print(" no activation attribute")

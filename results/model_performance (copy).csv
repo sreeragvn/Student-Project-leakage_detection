@@ -1,0 +1,22 @@
+Unnamed: 0,model_name,Augmentation,residual_subtract,blind_flip,tot_flow,res_flow,tot_resflow,loss_train,metric_train,loss_val,metric_val,loss_test,metric_test
+,linear_regression,True,True,True,True,True,True,0.0273,0.1113,0.0253,0.1136,0.0347,0.1344
+,nn_linear_regression_0,True,True,True,True,True,True,0.0297,0.1162,0.025,0.1152,0.0344,0.134
+,nn_hyper_model0,True,True,True,True,True,True,0.0148,0.0897,0.0201,0.1,0.0239,0.1094
+,linear_regression,True,True,True,True,True,False,0.0273,0.1113,0.0253,0.1136,0.0347,0.1344
+,nn_linear_regression_0,True,True,True,True,True,False,0.0295,0.1147,0.0244,0.1128,0.035,0.1354
+,nn_hyper_model0,True,True,True,True,True,False,0.0123,0.0777,0.0153,0.0879,0.0191,0.092
+,linear_regression,True,True,True,False,True,True,0.0273,0.1113,0.0253,0.1136,0.0347,0.1344
+,nn_linear_regression_0,True,True,True,False,True,True,0.0291,0.1151,0.0259,0.1163,0.0355,0.1357
+,nn_hyper_model0,True,True,True,False,True,True,0.0189,0.1006,0.0254,0.1134,0.0336,0.126
+,linear_regression,True,True,True,False,True,False,0.029,0.1164,0.0261,0.1199,0.0365,0.1408
+,nn_linear_regression_0,True,True,True,False,True,False,0.0307,0.1194,0.027,0.1214,0.0375,0.1405
+,nn_hyper_model0,True,True,True,False,True,False,0.0141,0.0926,0.0217,0.1088,0.0219,0.1082
+,linear_regression,True,True,False,True,True,True,0.0273,0.1113,0.0253,0.1136,0.0347,0.1344
+,nn_linear_regression_0,True,True,False,True,True,True,0.0294,0.1157,0.0248,0.1137,0.0344,0.1332
+,nn_hyper_model0,True,True,False,True,True,True,0.0127,0.0799,0.025,0.1125,0.0251,0.1173
+,linear_regression,True,True,False,True,True,False,0.0273,0.1113,0.0253,0.1136,0.0347,0.1344
+,nn_linear_regression_0,True,True,False,True,True,False,0.0293,0.1145,0.0242,0.1132,0.0338,0.1334
+,nn_hyper_model0,True,True,False,True,True,False,0.0478,0.1647,0.0651,0.1931,0.0711,0.1973
+,linear_regression,True,True,False,False,True,True,0.0273,0.1113,0.0253,0.1136,0.0347,0.1344
+,nn_linear_regression_0,True,True,False,False,True,True,    0.0292,    0.1152,    0.0254,    0.1149,    0.0349,    0.1335
+,nn_hyper_model0,True,True,False,False,True,True,    0.0310,    0.1380,    0.0437,    0.1640,    0.0539,    0.1757

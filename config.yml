@@ -3,6 +3,12 @@ experiment:
     blind_flip: [True, False]
     residual_subtract: [True, False]
     tot_mfc_scaler: [True, False]
+    residual_subtract: [True, False]
+    augmentation: [True, False]
+    blind_flip: [True, False]
+    tot_flow: [True, False]
+    res_flow: [True, False]
+    tot_resflow: [True, False]
     experiment_repeat: 5
     total_samples : 862
     EPOCH : 100
@@ -14,8 +20,9 @@ geometry:
     width: 5233
 
 model_performance:
-    column_metrics: ['model_name','Augmentation', 
-                    'Residual_subtract', 'mfc_sum_scaler', 'blind_flip',
+    column_metrics: ['model_name','Augmentation',
+                    'residual_subtract', 'blind_flip',
+                    'tot_flow', 'res_flow', 'tot_resflow',
                     'loss_train', 'metric_train',
                     'loss_val', 'metric_val', 
                     'loss_test', 'metric_test']

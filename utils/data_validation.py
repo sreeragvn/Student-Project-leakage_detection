@@ -16,6 +16,7 @@ from scipy.stats import gaussian_kde
 import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from utils.model_evaluation import plot_wing_contour
 
 x_range = np.arange(180, 16048, 250)
 y_range = np.arange(100, 5233, 250)
@@ -24,20 +25,30 @@ X, Y = np.meshgrid(x_range, y_range)
 def data_check(data):
     data_plot(data)
     print(data.isna().any())
-    data.describe().transpose()
+    print(data.describe().transpose())
     sns.pairplot(data[data.columns.values], diag_kind='kde')
 
-def get_leakage_close_to_sensor():
-    # data = pd.read_excel('./data_acquisition/wing_leakage_data_samples_filt.xlsx')
-    data = pd.read_csv('./data_acquisition/wing_leakage_data_samples_filt_bad_out.csv')
-    data = data.drop(data[data.quality == 'bad'].index)
-    data = data.drop(columns=['quality'])
-    single_leakage = data.rename(columns={'number of leakage':'number_of_leakage'})
-    single_leakage = single_leakage[single_leakage['number_of_leakage'] == 1]
-    flows = single_leakage.drop(columns=['sample_number', 'total flow rate', 'x1', 'y1', 'x2', 'y2',
-                                                'Comments', 'Day', 'number_of_leakage'])
-    single_leakage = single_leakage.drop(columns=['sample_number', 'total flow rate','x2', 'y2',
-                                                'Comments', 'Day', 'number_of_leakage'])
+def get_leakage_close_to_sensor(db_type):
+    if db_type == 'xlsx':
+        data = pd.read_excel('../data_acquisition/wing_leakage_data_samples_filt.xlsx', index_col=0)
+    # print(data.columns)
+    else:
+        data = pd.read_csv('../data_acquisition/wing_leakage_data_samples_filt_bad_out.csv', index_col=0)
+    # data = data.drop(data[data.quality == 'bad'].index)
+    # data = data.drop(columns=[])
+    data = data.rename(columns={'number of leakage':'number_of_leakage'})
+    # data = data.dropna(subset=['x1'])
+    data = data.dropna(subset=['MFC6'])
+    single_leakage = data[data['number_of_leakage'] == 1]
+    double_leakage = data[data['number_of_leakage'] == 2]
+    cols_to_remove = ['total flow rate','Comments', 'Day', 'number_of_leakage', 
+                      'quality', 'mfc10_residual','mfc9_residual', 'mfc7_residual',	'mfc8_residual',
+                      'mfc4_residual', 'mfc5_residual','mfc1_residual', 'mfc2_residual', 'mfc3_residual', 
+                      'mfc6_residual']
+    single_leakage = single_leakage.drop(columns=cols_to_remove)
+    single_leakage = single_leakage.drop(columns=['x2', 'y2'])
+    flows = single_leakage.drop(columns=['x1', 'y1'])
+    double_leakage = double_leakage.drop(columns=cols_to_remove)
     mfc1 = single_leakage.loc[(single_leakage['MFC1'] == flows.max(axis=1))]
     mfc2 = single_leakage.loc[(single_leakage['MFC2'] == flows.max(axis=1))]
     mfc3 = single_leakage.loc[(single_leakage['MFC3'] == flows.max(axis=1))]
@@ -49,7 +60,7 @@ def get_leakage_close_to_sensor():
     mfc9 = single_leakage.loc[(single_leakage['MFC9'] == flows.max(axis=1))]
     mfc10 = single_leakage.loc[(single_leakage['MFC10'] == flows.max(axis=1))]
 
-    return data, mfc1, mfc2, mfc3, mfc4, mfc5, mfc6, mfc7, mfc8, mfc9, mfc10
+    return data, flows, single_leakage, double_leakage, mfc1, mfc2, mfc3, mfc4, mfc5, mfc6, mfc7, mfc8, mfc9, mfc10
 
 def get_index_anomaly(mfc, coord, level, less):
     if not less:
@@ -73,7 +84,7 @@ def data_plot(data):
     # fig.title("1000 row data value")
     fig.text(0.5, 0.04, 'data', ha='center', va='center')
     fig.text(0.06, 0.5, '    value', ha='center', va='center', rotation='vertical')
-
+    fig.tight_layout()
     # fig.savefig("data plot.jpg")
     # ax = axs[-1]
     # ax.plot(tf.reduce_sum(data, axis=1))
@@ -169,20 +180,26 @@ def plot_leakages(mfc):
     plt.show()
     
 # meshgrid to coords conversion
-def meshgrid_to_coords(i,j):
-    x = X[-j - 10, i+31]
-    y = Y[-j - 10, i+31]
-    print(x,y)
+def meshgrid_to_coords(row):
+    i = row[0]
+    j = row[1]
+    x = X[-j + 10, i+31]
+    y = Y[-j + 10, i+31]
+    print(x, y)
+    # data['tranformed'] = data.apply(meshgrid_to_coords, axis=1)
+    # data.to_csv("../data_new.csv", index=False)
 
-    plt.plot([0, 7930], [0, 0], 'k')
-    plt.plot([7930, 16048], [0, 1149], 'k')
-    plt.plot([16048, 16048], [1149, 4386], 'k')
-    plt.plot([16048, 7843], [4386, 5233], 'k')
-    plt.plot([7843, 2493], [5233, 5233], 'k')
-    plt.plot([2493, 0], [5233, 0], 'k')
-    plt.xlim([-1000, 17000])
-    plt.ylim([-1000, 6000])
-    plt.xticks([])
-    plt.yticks([])
-    plt.gca().set_aspect('equal')
+    return str(x)+' , '+ str(y)
+
+    # plt.plot([0, 7930], [0, 0], 'k')
+    # plt.plot([7930, 16048], [0, 1149], 'k')
+    # plt.plot([16048, 16048], [1149, 4386], 'k')
+    # plt.plot([16048, 7843], [4386, 5233], 'k')
+    # plt.plot([7843, 2493], [5233, 5233], 'k')
+    # plt.plot([2493, 0], [5233, 0], 'k')
+    # plt.xlim([-1000, 17000])
+    # plt.ylim([-1000, 6000])
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.gca().set_aspect('equal')
     

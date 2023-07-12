@@ -5,6 +5,10 @@ from utils.data_preprocess import load_single_leakage_model_data
 from utils.model_evaluation import plot_test_pred
 import numpy as np
 
+# Sandwiched dropout layer to the hyperparameter tuned model and did the predictions 1000 times without training the model again
+# Sandwiched dropout layer to the hyperparameter tuned model and did the predictions 1000 times after training the model again
+# During hyperparameter tuning, it is ensured that a dropout layer is there after a dense layer. This model is directly used for uncertainity quanitification
+
 # %%
 dropout_prob = 0.1
 
@@ -46,8 +50,8 @@ plot_test_pred(y_test, pred_mean, scaler_coords)
 pred_mean_un = scaler_coords.inverse_transform(pred_mean)
 pred_std_un = scaler_coords.inverse_transform(pred_std)
 # should we do a 
-radius = np.sqrt((pred_mean_un.transpose()[0] - pred_std_un.transpose()[0])**2 + 
-                 (pred_mean_un.transpose()[1] - pred_std_un.transpose()[1])**2)
+# radius = np.sqrt((pred_mean_un.transpose()[0] - pred_std_un.transpose()[0])**2 + 
+#                  (pred_mean_un.transpose()[1] - pred_std_un.transpose()[1])**2)
 
 # %%
 print('mean x coords')
