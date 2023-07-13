@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=leak_exp
+#SBATCH --job-name=stud_exp
 ##SBATCH --partition=standard,fat
 #SBATCH --cpus-per-task=2
 #SBATCH --time=02-00:00:00
@@ -12,7 +12,7 @@
 #module load lib/cudnn/7.6.1.34_cuda_10.0
 #module load anaconda/3-5.0.1
 
-source activate tf-200-GPU-py37
+source activate studiarbeit
 
 # Extra output
 nvidia-smi

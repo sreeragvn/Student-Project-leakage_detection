@@ -12,7 +12,7 @@ experiment:
     experiment_repeat: 5
     total_samples : 862
     EPOCH : 100
-    factor : 2
+    factor : 3
     rebuild_train : False
 
 geometry:
