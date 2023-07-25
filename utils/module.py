@@ -72,7 +72,7 @@ def model_builder_single_dropout(hp):
         model.add(
             keras.layers.Dense(
                 units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
-                activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+                activation=hp.Choice("activation", ["relu", "tanh"]),
                 kernel_initializer='he_uniform'
             )
         )
@@ -109,8 +109,8 @@ def model_builder_single(hp):
                 kernel_initializer='he_uniform'
             )
         )
-    if hp.Boolean("dropout"):
-      model.add(layers.Dropout(rate=0.1))
+        if hp.Boolean("dropout"):
+            model.add(layers.Dropout(rate=0.1))
     model.add(keras.layers.Dense(units=2, activation= "linear", kernel_initializer='he_uniform'))
 
     # Tune the learning rate for the optimizer
@@ -127,36 +127,6 @@ def model_builder_single(hp):
 
     return model
 
-#Define the model using model builder from keras tuner
-def model_builder_yolo(hp):
-    model = keras.Sequential()
-
-    # Choose an optimal value between 32-512
-    for i in range(hp.Int("num_layers", 1, 15)):
-        model.add(
-            keras.layers.Dense(
-                units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
-                activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
-                kernel_initializer='he_uniform'
-            )
-        )
-    if hp.Boolean("dropout"):
-      model.add(layers.Dropout(rate=0.1))
-    model.add(keras.layers.Dense(units=6, activation= "linear", kernel_initializer='he_uniform'))
-
-    # Tune the learning rate for the optimizer
-    # Choose an optimal value from 0.01, 0.001, or 0.0001
-    # hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
-    learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-1, sampling="log")
-
-    # model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
-    #             loss="mse",  metrics='mae')
-    
-    model.compile(optimizer=tf.keras.optimizers.Nadam(learning_rate=learning_rate),
-                loss="mse",
-                metrics='mae')
-
-    return model
 
 #search for the best hyperparameters and train the standard model with original training data
 def hyper_model(X_train,Y_train, X_val, y_val, epoch, factor, augmentation, residual_subtract, 
@@ -248,3 +218,72 @@ def get_activation_functions(model):
             print(" ", layer.activation)
         except AttributeError:
             print(" no activation attribute")
+
+
+# Define the multi-task HyperModel
+from kerastuner import HyperModel, Hyperband
+class Single_leakage(HyperModel):    
+    def __init__(self, input_num):
+        self.input_num = input_num
+
+    def build(self, hp):
+        inputs = keras.Input(shape=(self.input_num,))
+        shared_layer = inputs
+        for i in range(hp.Int('num_layers', 1, 15)):
+            l1_weight = hp.Choice('l1_weight', values=[0.0, 1e-1, 1e-2, 1e-3])
+            l2_weight = hp.Choice('l2_weight', values=[0.0, 1e-1, 1e-2, 1e-3])
+            kernel_regularizer=keras.regularizers.L1L2(l1 = l1_weight, l2 = l2_weight)
+            shared_layer = layers.Dense(
+                units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
+                activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+                kernel_initializer='he_uniform',
+                kernel_regularizer=kernel_regularizer
+            )(shared_layer)
+        
+            if hp.Boolean("dropout"):
+                shared_layer = layers.Dropout(rate=0.1)(shared_layer)
+        
+        outputs = layers.Dense(units=2, activation= "linear", kernel_initializer='he_uniform')(shared_layer)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        learning_rate = hp.Float("lr", min_value=1e-4, max_value=1e-1, sampling="log")
+
+        model.compile(optimizer=tf.keras.optimizers.Nadam(learning_rate=learning_rate),
+                    loss="mse",
+                    metrics='mae')
+        return model
+
+def hyper_func_model(X_train, y_train, X_val, y_val, epochs, input_num, factor):
+# Create the multi-task HyperModel
+    single_leakage_hypermodel = Single_leakage(input_num=input_num)
+
+    # Define the Hyperband tuner
+    tuner = Hyperband(
+        single_leakage_hypermodel,
+        objective='val_loss',
+        max_epochs=epochs,
+        factor=factor,
+        directory="../../tensorflow_log_files/studienarbeit/",
+        project_name='single_leakage'
+    )
+
+    tuner.search_space_summary()
+    stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+    tuner.search(X_train, y_train, epochs=epochs, validation_data = (X_val, y_val), callbacks=[stop_early, 
+                                                                                            #   keras.callbacks.TensorBoard("../tensorflow_log_files/studienarbeit/tb_logs"+str(folder_name))
+                                                                                              ])
+    #tuner.search(X_train, Y_train, epochs=50, validation_data=(X_test,Y_test), callbacks=[stop_early])
+    # Get the optimal hyperparameters
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+    print("Best Hyperparameters:", best_hps)
+
+    model = tuner.hypermodel.build(best_hps)
+    history = model.fit(X_train, y_train, epochs=epochs, validation_data = (X_val, y_val), shuffle= True)
+
+    print(f"""
+    The hyperparameter search is complete. The optimal learning rate for the optimizer
+    is {model.optimizer.lr.numpy()}.
+    """)
+
+    return model

@@ -35,6 +35,7 @@ for i in range(cfg['experiment']['experiment_repeat']):
         X_train, X_test, X_val, y_train, y_test, y_val, scaler_coords, scaler_flows  = load_single_leakage_model_data(residual_subtract, augmentation, 
                                                                                                     blind_flip, tot_flow, 
                                                                                                     res_flow, tot_resflow)
+        pd.DataFrame(y_test).to_csv('ytest.csv')
         # print(X_train.shape)
         # print(X_test.shape)
         # print(X_val.shape)
@@ -68,5 +69,5 @@ for i in range(cfg['experiment']['experiment_repeat']):
         model_metric.to_csv(model_performance_file, index=False)
 # %%
 # get_activation_functions(best_model)
-best_model.summary()
-best_model.save('saved_model/single_leakage_model_new')
+# best_model.summary()
+# best_model.save('saved_model/single_leakage_model_new')
