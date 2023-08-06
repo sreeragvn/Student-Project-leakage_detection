@@ -33,7 +33,7 @@ def get_leakage_close_to_sensor(db_type):
         data = pd.read_excel('../data_acquisition/wing_leakage_data_samples_filt.xlsx', index_col=0)
     # print(data.columns)
     else:
-        data = pd.read_csv('../data_acquisition/wing_leakage_data_samples_filt_bad_out.csv', index_col=0)
+        data = pd.read_csv('../data_acquisition/clean_data_check2.csv', index_col=0)
     # data = data.drop(data[data.quality == 'bad'].index)
     # data = data.drop(columns=[])
     data = data.rename(columns={'number of leakage':'number_of_leakage'})
@@ -64,9 +64,11 @@ def get_leakage_close_to_sensor(db_type):
 
 def get_index_anomaly(mfc, coord, level, less):
     if not less:
-        return mfc.loc[(mfc[coord] >= level)]
+        anomaly = mfc.loc[(mfc[coord] >= level)]
     else:
-        return mfc.loc[(mfc[coord] <= level)]
+        anomaly =  mfc.loc[(mfc[coord] <= level)]
+    print(anomaly)
+    plot_leakages(anomaly)
     
 def data_plot(data):
     # plt.figure(figsize=(8, 6), dpi=80)
@@ -142,11 +144,11 @@ def plot_leakages(mfc):
     # plot sensor positions
     sensors = np.array([[2426, 70], [5480, 70], [8661, 191], [11676, 584], [13976, 917], [2603, 5163], [5723, 5163], [8417, 5103], [11646, 4740], [14641, 4391]])
     for i in range(len(sensors)):
-        plt.scatter(sensors[i, 0], sensors[i, 1], color='tab:blue', s=100)
+        plt.scatter(sensors[i, 0], sensors[i, 1], color='tab:green', s=300)
         if i < 5:
-            plt.text(sensors[i, 0], sensors[i, 1] - 200, str(i+1), fontsize='xx-large')
+            plt.text(sensors[i, 0], sensors[i, 1] - 200, 'MFC'+str(i+1), fontsize='xx-large')
         else:
-            plt.text(sensors[i, 0], sensors[i, 1] + 350, str(i+1), fontsize='xx-large')
+            plt.text(sensors[i, 0], sensors[i, 1] + 350, 'MFC'+str(i+1), fontsize='xx-large')
 
     # plot leakage positions
     plt.scatter(X, Y, color='black', s=10)
