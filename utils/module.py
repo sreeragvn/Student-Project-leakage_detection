@@ -235,7 +235,7 @@ class Single_leakage(HyperModel):
             kernel_regularizer=keras.regularizers.L1L2(l1 = l1_weight, l2 = l2_weight)
             shared_layer = layers.Dense(
                 units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
-                activation=hp.Choice("activation", ["relu", "tanh", "elu"]),
+                activation=hp.Choice("activation", ["relu", "elu"]),
                 kernel_initializer='he_uniform',
                 kernel_regularizer=kernel_regularizer
             )(shared_layer)
@@ -261,10 +261,12 @@ def hyper_func_model(X_train, y_train, X_val, y_val, epochs, input_num, factor):
     tuner = Hyperband(
         single_leakage_hypermodel,
         objective='val_loss',
-        max_epochs=epochs,
+        max_epochs=epochs+100,
         factor=factor,
+        # hyperband_iterations = 2,
+        # max_retries_per_trial = 2,
         directory="../../tensorflow_log_files/studienarbeit/",
-        project_name='single_leakage'
+        project_name='single_leakage_final2'
     )
 
     tuner.search_space_summary()

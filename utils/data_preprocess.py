@@ -16,7 +16,7 @@ import pandas as pd
 
 np.random.seed(0)
 
-def load_data(total_samples):
+def load_data():
     # data = pd.read_csv('../data_acquisition/wing_leakage_data_samples_filt_bad_out.csv')
     # data = data.drop(data[data.quality == 'bad'].index)
     # # data = data[data['MFC9'].notna()]
@@ -39,7 +39,7 @@ def load_data(total_samples):
     # two_leakage = two_leakage.drop(columns=['number_of_leakage'])
     # single_leakage.to_csv("single_leakage.csv")
 
-    data = pd.read_csv('../data_acquisition/clean_data_check2.csv', index_col=0)
+    data = pd.read_csv('../data_acquisition/clean_data_check2_less.csv', index_col=0)
     data = data.drop(columns=['Comments', 'Day', 'quality'])
     single_leakage = data[data['number_of_leakage'] == 1].drop(columns=['number_of_leakage', 'x2', 'y2'])
     double_leakage = data[data['number_of_leakage'] == 2].drop(columns=['number_of_leakage'])

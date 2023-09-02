@@ -77,11 +77,11 @@ def plot_test_pred(test, pred, scaler_coords : Optional[object] = None):
     # plot sensor positions
     sensors = np.array([[2426, 70], [5480, 70], [8661, 191], [11676, 584], [13976, 917], [2603, 5163], [5723, 5163], [8417, 5103], [11646, 4740], [14641, 4391]])
     for i in range(len(sensors)):
-        plt.scatter(sensors[i, 0], sensors[i, 1], color='tab:blue', s=100)
+        plt.scatter(sensors[i, 0], sensors[i, 1], color='tab:green', s=300)
         if i < 5:
-            plt.text(sensors[i, 0], sensors[i, 1] - 200, str(i+1), fontsize='xx-large')
+            plt.text(sensors[i, 0], sensors[i, 1] - 200, 'MFC'+str(i+1), fontsize='xx-large')
         else:
-            plt.text(sensors[i, 0], sensors[i, 1] + 350, str(i+1), fontsize='xx-large')
+            plt.text(sensors[i, 0], sensors[i, 1] + 350, 'MFC'+str(i+1), fontsize='xx-large')
 
     # plot leakage positions
     plt.scatter(X, Y, color='black', s=10)
