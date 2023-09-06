@@ -92,11 +92,15 @@ def plot_test_pred(test, pred, scaler_coords : Optional[object] = None):
             plt.scatter(pred[i][0], pred[i][1], color='tab:blue', s=200)
             line = np.vstack((test[i], pred[i])).transpose()
             plt.plot(line[0], line[1], color = 'black')
+            plt.annotate(str(i), (pred[i][0], pred[i][1] + 0.2), fontsize=15)
+            plt.annotate(str(i), (test[i][0], test[i][1] + 0.2), fontsize=15)
         else:
             plt.scatter(test[i][0], test[i][1], color='tab:red', s=200, label="true")
             plt.scatter(pred[i][0], pred[i][1], color='tab:blue', s=200, label="pred")
             line = np.vstack((test[i], pred[i])).transpose()
             plt.plot(line[0], line[1], color = 'black')
+            plt.annotate(str(i), (pred[i][0], pred[i][1] + 0.2), fontsize=15)
+            plt.annotate(str(i), (test[i][0], test[i][1] + 0.2), fontsize=15)
 
     # print(X.shape)
 
