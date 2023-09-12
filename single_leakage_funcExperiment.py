@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import pandas as pd
 from utils.module import model_eval
 from utils.model_evaluation import plot_test_pred
+import tensorflow as tf
 
 single_leakage, two_leakage = load_data()
 # print(single_leakage.columns)
@@ -39,9 +40,13 @@ X_train = scaler_flows.fit_transform(X_train)
 X_test = scaler_flows.transform(X_test)
 X_val = scaler_flows.transform(X_val)
 
-hyper_model = hyper_func_model(X_train, y_train, X_val, y_val, epochs=1000, input_num=10, factor= 2)
-hyper_model.summary()
-# also named single_leakage_model_less
+# hyper_model = hyper_func_model(X_train, y_train, X_val, y_val, epochs=1000, input_num=10, factor= 2)
+# hyper_model.summary()
+# # also named single_leakage_model_less
+# hyper_model.save('saved_model/single_leak/single_leakage_final_cleansed')
+
+hyper_model = tf.keras.models.load_model('saved_model/single_leak/single_leakage_model_less')
+hyper_model.fit(X_train, y_train, epochs=1000, validation_data = (X_val, y_val), shuffle= True)
 hyper_model.save('saved_model/single_leak/single_leakage_final_cleansed')
 
 model_evaluate, y_pred = model_eval(hyper_model, X_test, y_test, X_train, y_train, X_val, y_val)
