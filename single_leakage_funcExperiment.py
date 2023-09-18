@@ -6,6 +6,7 @@ import pandas as pd
 from utils.module import model_eval
 from utils.model_evaluation import plot_test_pred
 import tensorflow as tf
+import numpy as np
 
 single_leakage, two_leakage = load_data()
 # print(single_leakage.columns)
@@ -43,11 +44,53 @@ X_val = scaler_flows.transform(X_val)
 # hyper_model = hyper_func_model(X_train, y_train, X_val, y_val, epochs=1000, input_num=10, factor= 2)
 # hyper_model.summary()
 # # also named single_leakage_model_less
-# hyper_model.save('saved_model/single_leak/single_leakage_final_cleansed')
+# hyper_model.save('saved_model/single_leak/single_leakage_model_less')
 
 hyper_model = tf.keras.models.load_model('saved_model/single_leak/single_leakage_model_less')
-hyper_model.fit(X_train, y_train, epochs=1000, validation_data = (X_val, y_val), shuffle= True)
-hyper_model.save('saved_model/single_leak/single_leakage_final_cleansed')
+hyper_model.summary()
+# from tensorflow.keras.callbacks import ModelCheckpoint
+# checkpoint_callback = ModelCheckpoint(
+#     filepath='best_single_model_weights.h5',  # Filepath to save the weights
+#     monitor='val_mae',               # Metric to monitor for saving
+#     save_best_only=True,              # Save only the best model
+#     save_weights_only=True,           # Save only the weights (not the full model)
+#     mode='min',                       # Mode to minimize the monitored metric
+#     verbose=1                          # Verbosity level (optional)
+# )
+
+# history = hyper_model.fit(X_train, y_train, epochs=1000, 
+#                           validation_data = (X_val, y_val), 
+#                           shuffle= True, 
+#                           callbacks=[checkpoint_callback]
+#                           )
+# hyper_model.save('saved_model/single_leak/single_leakage_final_cleansed')
 
 model_evaluate, y_pred = model_eval(hyper_model, X_test, y_test, X_train, y_train, X_val, y_val)
-plot_test_pred(y_test, y_pred, scaler_coords)
+# plot_test_pred(y_test, y_pred, scaler_coords)
+y_pred = scaler_coords.inverse_transform(y_pred)
+y_test = scaler_coords.inverse_transform(y_test)
+print(y_pred.shape, y_test.shape)
+diff = y_pred - y_test
+distances = np.sqrt(np.sum(diff ** 2, axis=-1))/10
+# print(distances)
+# print(len(distances))
+
+y_mean = [distances.mean(axis=0)]*len(distances)
+ind = np.argpartition(distances, -40)[-40:]
+top5 = distances[ind]
+average_of_75 = [top5.mean(axis=0)]*len(distances)
+# average_of_75 = [30]*len(distances)
+print(average_of_75, y_mean)
+
+
+import matplotlib.pyplot as plt
+plt.figure(figsize=(10, 5))
+plt.scatter(range(len(distances)),distances, label = 'L2 distance', color = 'k')
+plt.plot(range(len(distances)),y_mean, label='Mean', linestyle='--', color = 'k')
+plt.plot(range(len(distances)),average_of_75, label='75% Data', linestyle='-.', color = 'k')
+plt.legend(loc="upper left")
+# plt.title("Distance between the Model predictions and True value", fontsize = 15)
+plt.xlabel('sample no')
+plt.ylabel('L2 distance(cm)')
+plt.savefig('./results/single_leakage_distance_plot.png')
+plt.show()

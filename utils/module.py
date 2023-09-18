@@ -229,19 +229,12 @@ class Single_leakage(HyperModel):
     def build(self, hp):
         inputs = keras.Input(shape=(self.input_num,))
         shared_layer = inputs
-        for i in range(hp.Int('num_layers', 1, 15)):
-            l1_weight = hp.Choice('l1_weight', values=[0.0, 1e-1, 1e-2, 1e-3])
-            l2_weight = hp.Choice('l2_weight', values=[0.0, 1e-1, 1e-2, 1e-3])
-            kernel_regularizer=keras.regularizers.L1L2(l1 = l1_weight, l2 = l2_weight)
+        for i in range(hp.Int('num_layers', 1, 20)):
             shared_layer = layers.Dense(
-                units=hp.Int("units_" + str(i), min_value=32, max_value=512, step=32),
-                activation=hp.Choice("activation", ["relu", "elu"]),
-                kernel_initializer='he_uniform',
-                kernel_regularizer=kernel_regularizer
+                units=hp.Int("units_" + str(i), min_value=4, max_value=512, step=4),
+                activation='relu',
+                kernel_initializer='he_uniform'
             )(shared_layer)
-        
-            if hp.Boolean("dropout"):
-                shared_layer = layers.Dropout(rate=0.1)(shared_layer)
         
         outputs = layers.Dense(units=2, activation= "linear", kernel_initializer='he_uniform')(shared_layer)
 
@@ -252,6 +245,17 @@ class Single_leakage(HyperModel):
                     loss="mse",
                     metrics='mae')
         return model
+
+
+from tensorflow.keras.callbacks import ModelCheckpoint
+checkpoint_callback = ModelCheckpoint(
+    filepath='best_single_model_tuner_weights.h5',  # Filepath to save the weights
+    monitor='val_loss',               # Metric to monitor for saving
+    save_best_only=True,              # Save only the best model
+    save_weights_only=True,           # Save only the weights (not the full model)
+    mode='min',                       # Mode to minimize the monitored metric
+    verbose=1                          # Verbosity level (optional)
+)
 
 def hyper_func_model(X_train, y_train, X_val, y_val, epochs, input_num, factor):
 # Create the multi-task HyperModel
@@ -270,18 +274,16 @@ def hyper_func_model(X_train, y_train, X_val, y_val, epochs, input_num, factor):
     )
 
     tuner.search_space_summary()
-    stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+    # stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
-    tuner.search(X_train, y_train, epochs=epochs, validation_data = (X_val, y_val), callbacks=[stop_early, 
-                                                                                            #   keras.callbacks.TensorBoard("../tensorflow_log_files/studienarbeit/tb_logs"+str(folder_name))
-                                                                                              ])
+    tuner.search(X_train, y_train, epochs=epochs, validation_data = (X_val, y_val), callbacks=[checkpoint_callback])
     #tuner.search(X_train, Y_train, epochs=50, validation_data=(X_test,Y_test), callbacks=[stop_early])
     # Get the optimal hyperparameters
     best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
     print("Best Hyperparameters:", best_hps)
 
     model = tuner.hypermodel.build(best_hps)
-    history = model.fit(X_train, y_train, epochs=epochs, validation_data = (X_val, y_val), shuffle= True)
+    history = model.fit(X_train, y_train, epochs=epochs, validation_data = (X_val, y_val), shuffle= True, callbacks=[checkpoint_callback])
 
     print(f"""
     The hyperparameter search is complete. The optimal learning rate for the optimizer
