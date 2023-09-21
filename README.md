@@ -23,16 +23,16 @@ model’s predictions. You can for example consider [5, 6] as candidate approach
 6. (Optional) Multi-leakage detection: Discuss how your neural network architecture could be adapted so as to detect
 multiple leakages in one shot. Implement and test your ideas if possible.
 ## References
-[1] C. Brauer, D. Lorenz, and L. Tondji, “Group equivariant networks for leakage detection in vacuum bagging,” in 2022
+1. C. Brauer, D. Lorenz, and L. Tondji, “Group equivariant networks for leakage detection in vacuum bagging,” in 2022
 30th European Signal Processing Conference (EUSIPCO), pp. 1437–1441, IEEE, 2022.
-[2] A. Haschenburger, L. Onorato, M. Sujahudeen, D. Taraczky, A. Osis, A. Bracke, M. Byelov, F. Vermeulen, and E. Oost-
+2. A. Haschenburger, L. Onorato, M. Sujahudeen, D. Taraczky, A. Osis, A. Bracke, M. Byelov, F. Vermeulen, and E. Oost-
 hoek, “Computational methods for leakage localisation in a vacuum bag using volumetric flow rate measurements:
 Delft university of technology, german aerospace center,” Production Engineering, vol. 16, no. 6, pp. 823–835, 2022.
-[3] A. Haschenburger, N. Menke, and J. Stüve, “Sensor-based leakage detection in vacuum bagging,” The International
+3. A. Haschenburger, N. Menke, and J. Stüve, “Sensor-based leakage detection in vacuum bagging,” The International
 Journal of Advanced Manufacturing Technology, vol. 116, no. 7-8, pp. 2413–2424, 2021.
-[4] A. Haschenburger and C. Heim, “Two-stage leak detection in vacuum bags for the production of fibre-reinforced
+4. A. Haschenburger and C. Heim, “Two-stage leak detection in vacuum bags for the production of fibre-reinforced
 composite components,” CEAS Aeronautical Journal, vol. 10, no. 3, pp. 885–892, 2019.
-[5] Y. Gal and Z. Ghahramani, “Dropout as a bayesian approximation: Representing model uncertainty in deep learning,”
+5. Y. Gal and Z. Ghahramani, “Dropout as a bayesian approximation: Representing model uncertainty in deep learning,”
 in international conference on machine learning, pp. 1050–1059, PMLR, 2016.
-[6] L. Oala, C. Heiß, J. Macdonald, M. März, W. Samek, and G. Kutyniok, “Interval neural networks: Uncertainty scores,”
+6. L. Oala, C. Heiß, J. Macdonald, M. März, W. Samek, and G. Kutyniok, “Interval neural networks: Uncertainty scores,”
 arXiv preprint arXiv:2003.11566, 2020.
